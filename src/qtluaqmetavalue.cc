@@ -147,6 +147,10 @@ namespace QtLua {
 	value[3] = color->blue();
 	return value;
       }
+      case QMetaType::QVariant: {
+        const QVariant *v = reinterpret_cast<const QVariant*>(data);
+        return Value(ls, *v);
+      }
       default:
 	if (type == ud_ref_type)
 	  {
@@ -306,6 +310,11 @@ namespace QtLua {
 	QColor *color = reinterpret_cast<QColor*>(data);
 	*color = QColor(v.at(1).to_integer(), v.at(2).to_integer(), v.at(3).to_integer());
 	break;
+      }
+      case QMetaType::QVariant: {
+        QVariant *qv = reinterpret_cast<QVariant*>(data);
+        *qv = v.to_qvariant();
+        break;
       }
       default: {
 

@@ -34,6 +34,11 @@
 #include <internal/TableIterator>
 #include <internal/QMetaValue>
 
+//table covert to qvariant
+#include <QColor>
+#include <QRectF>
+#include <QPointF>
+
 extern "C" {
 #include <lua.h>
 #if LUA_VERSION_NUM < 501
@@ -630,6 +635,30 @@ QVariant ValueBase::to_qvariant() const
       return QVariant(to_number());
     case TString:
       return QVariant(to_string());
+    case TTable: {
+      QList<qreal> list = to_qlist<qreal>();
+      switch(list.count()) {
+      case 2:
+        return QVariant(QPointF(list.at(0),
+                                list.at(1))
+                        );
+      case 3:
+        return QVariant(QColor(int(list.at(0)),
+                               int(list.at(1)),
+                               int(list.at(2)))
+                        );
+      case 4:
+        return QVariant(QRectF(list.at(0),
+                               list.at(1),
+                               list.at(2),
+                               list.at(3))
+                        );
+      default:
+        QTLUA_THROW(QtLua::ValueBase, "Can not convert a lua::table with % argument(s) to a QVariant.", .arg(list.count()));
+      }
+
+
+    }
 
     default:
       QTLUA_THROW(QtLua::ValueBase, "Can not convert a `%' lua value to a QVariant.", .arg(type_name()));
