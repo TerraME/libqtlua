@@ -1046,31 +1046,6 @@ bool State::openlib(Librarys lib)
       hasSetted = true;
     }
 #endif
-//    case AllLibs:
-//#if LUA_VERSION_NUM >= 502
-//      QTLUA_LUA_CALL(_lst, luaopen_coroutine, "coroutine");
-//      QTLUA_LUA_CALL(_lst, luaopen_bit32, "bit32");
-//#endif
-//#ifdef HAVE_LUA_OSLIB
-//      QTLUA_LUA_CALL(_lst, luaopen_os, "os");
-//#endif
-//#ifdef HAVE_LUA_PACKAGELIB
-//      QTLUA_LUA_CALL(_lst, luaopen_package, "package");
-//#endif
-//      QTLUA_LUA_CALL(_lst, luaopen_base, "_G");
-//      QTLUA_LUA_CALL(_lst, luaopen_string, "string");
-//      QTLUA_LUA_CALL(_lst, luaopen_table, "table");
-//      QTLUA_LUA_CALL(_lst, luaopen_math, "math");
-//      QTLUA_LUA_CALL(_lst, luaopen_io, "io");
-//      QTLUA_LUA_CALL(_lst, luaopen_debug, "debug");
-//#ifdef HAVE_LUA_JITLIB
-//      QTLUA_LUA_CALL(_lst, luaopen_jit, "jit");
-//#endif
-//#ifdef HAVE_LUA_FFILIB
-//      QTLUA_LUA_CALL(_lst, luaopen_ffi, "ffi");
-//#endif
-//      qtluaopen_qt(this);
-
     if(lib & QtLuaLib) {
       reg_c_function("print", lua_cmd_print);
       reg_c_function("list", lua_cmd_list);

@@ -68,8 +68,17 @@ namespace QtLua {
     void *qt_args[11];
 
     // return value
-    if (*mm.typeName())
-      qt_args[0] = args.create(QMetaType::type(mm.typeName())).get_data();
+    QObject *robj = 0x0;
+    const char *rTypeName = mm.typeName();
+    if (rTypeName) {
+        int type = QMetaType::type(rTypeName);
+        if(type != QMetaType::UnknownType) {
+            qt_args[0] = args.create(QMetaType::type(mm.typeName())).get_data();
+        }
+        else {//construct object via metaobject system
+            qt_args[0] = Q_RETURN_ARG(QObject*, robj).data();
+        }
+    }
     else
       qt_args[0] = 0;
 
@@ -91,7 +100,26 @@ namespace QtLua {
 	assert(i < 11);
 
 	//	if (i <= lua_args.size())
-	  qt_args[i] = args.create(QMetaType::type(pt.constData()), lua_args[i]).get_data();
+          int type = QMetaType::type(pt.constData());
+          if(QMetaType::UnknownType != type) {
+            qt_args[i] = args.create(type, lua_args[i]).get_data();
+          }
+          else {//get object via wrapper
+              QObjectWrapper::ptr qow_i = lua_args[i].to_userdata_cast<QObjectWrapper>();
+
+              if (!qow_i.valid())
+                QTLUA_THROW(QtLua::Method, "`%' argument is unknown", .arg(i));
+
+              QObject *obj_i = 0x0;
+              try {
+                obj_i = &(qow_i->get_object());
+              }
+              catch(String e) {
+                QTLUA_THROW(QtLua::Method, "`%' argument is nil value", .arg(i));
+              }
+
+              qt_args[i] = obj_i;
+          }
 
 	  //	else
 	  //	  qt_args[i] = args.create(QMetaType::type(pt.constData())).get_data();
@@ -107,8 +135,12 @@ namespace QtLua {
 		  .arg(mm.methodSignature()));
 #endif
 
-    if (qt_args[0])
-      return args[0].to_value(ls);
+    if(robj) {
+        return Value::List() << Value(ls, robj, true, true);
+    }
+    else if (qt_args[0]) {
+        return args[0].to_value(ls);
+    }
     else
       return Value::List();
   }
