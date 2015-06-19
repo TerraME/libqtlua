@@ -41,7 +41,8 @@ namespace QtLua {
       _obj(obj),
       _lua_next_slot(1),
       _reparent(false),
-      _delete(obj && obj->parent())
+      _delete(obj && obj->parent()),
+      _indexOfToString(-1)
   {
 #ifdef QTLUA_QOBJECTWRAPPER_DEBUG
     qDebug() << "wrapper object created" << _obj;
@@ -52,6 +53,15 @@ namespace QtLua {
 	assert_do(QMetaObject::connect(obj, destroyindex, this, metaObject()->methodCount() + 0));
 
 	ls->_whash.insert(obj, this);
+        //get toString index
+        const QMetaObject *mo = _obj->metaObject();
+        int index = mo->indexOfMethod("toString()");
+        if(index != -1) {
+            if(mo->method(index).returnType() == QMetaType::QString) {
+                _indexOfToString = index;
+            }
+        }
+
 	// increment reference count since we are bound to a qobject
 	_inc();
       }
@@ -374,11 +384,19 @@ namespace QtLua {
 
   String QObjectWrapper::get_value_str() const
   {
-    if (!_obj)
-      return "(deleted)";
-    QString addr;
-    addr.sprintf("%p", _obj);
-    return addr;
+    if(!_obj) return "(deleted)";
+    QString result;
+    if(_indexOfToString != -1) {
+        void *args[1] = {static_cast<void*>(&result)};
+        _obj->qt_metacall(QMetaObject::InvokeMetaMethod, _indexOfToString, args);
+
+    }
+    else {
+        result = QString("0x%1(%2)")
+                .arg((int)_obj, 0, 16)
+                .arg(qobject_name(*_obj).constData());
+    }
+    return result;
   }
 
   void QObjectWrapper::completion_patch(String &path, String &entry, int &offset)
