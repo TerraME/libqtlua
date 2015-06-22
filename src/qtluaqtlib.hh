@@ -30,6 +30,8 @@ namespace QtLua {
 
   void qtluaopen_qt(State *ls);
 
+  void create_qmeta_object_table();
+
   /** Fake QSizePolicy class needed to expose Policy enum */
   class SizePolicy
     : public QObject

@@ -116,6 +116,7 @@ namespace QtLua {
             mc = &MetaCache::get_meta(meta);
             m = mc->_member_cache.value(name);
         }
+        else break;
     }
 
     return m;

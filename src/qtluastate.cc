@@ -747,6 +747,7 @@ State::State()
   assert(Value::TFunction == LUA_TFUNCTION);
   assert(Value::TUserData == LUA_TUSERDATA);
   assert(Value::TThread == LUA_TTHREAD);
+  create_qmeta_object_table();
 
 #if LUA_VERSION_NUM < 501
   _mst = _lst = lua_open();
