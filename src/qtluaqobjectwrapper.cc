@@ -322,6 +322,7 @@ namespace QtLua {
     // handle existing children access
     if (QObject *cobj = get_child(obj, skey))
       {
+        //old child
 	QObjectWrapper::ptr cw = get_wrapper(ls, cobj);
 
 	if (value.is_nil())
@@ -329,7 +330,7 @@ namespace QtLua {
 	    cw->reparent(0);
 	    return;
 	  }
-
+        //new child
 	QObjectWrapper::ptr vw = value.to_userdata_cast<QObjectWrapper>();
 	QObject &vobj = vw->get_object();
 

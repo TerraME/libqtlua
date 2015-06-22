@@ -187,6 +187,7 @@ namespace QtLua {
     switch (_mo->method(_index).methodType())
       {
       case QMetaMethod::Slot:
+      case QMetaMethod::Method:
 	// force method invokation operator
 	if (!path.isEmpty())
 	  path[path.size() - 1] = ':';
