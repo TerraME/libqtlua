@@ -99,13 +99,13 @@ namespace QtLua {
     qmetaobject_table_t _mo_table;
   };
 
-  static QMetaObjectTable *qt_meta = nullptr;
+  static QMetaObjectTable *qt_meta = 0x0;
 
   void create_qmeta_object_table()
   {
       if(!qt_meta) {
           qt_meta = new QMetaObjectTable;
-          qt_meta->setParent(qApp ? qApp : nullptr);
+          qt_meta->setParent(qApp);
       }
   }
 
