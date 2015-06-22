@@ -51,12 +51,13 @@ namespace QtLua {
   {
     friend class QObjectWrapper;
 
-    MetaCache(const QMetaObject *mo);
+    MetaCache(const QMetaObject *mo, const QMetaObject *supreme_mo);
 
   public:
     /** Copy constructor */
     inline MetaCache(const MetaCache &mc);
-
+    /** Create cache meta information for a QMetaObject with supreme QMetaObject which limit member access. */
+    static MetaCache & create_meta(const QMetaObject *mo, const QMetaObject *supreme_mo);
     /** Get cache meta information for a QObject */
     inline static MetaCache & get_meta(const QObject &obj);
     /** Get cache meta information for a QMetaObject */
@@ -80,9 +81,13 @@ namespace QtLua {
     /** Get associated QMetaObject pointer */
     inline const QMetaObject * get_meta_object() const;
 
+    /** Get supreme QMetaObject pointer for current QMetaObject pointer which should not affect others */
+    inline const QMetaObject * get_supreme_meta_object() const;
+
   private:
     member_cache_t _member_cache;
     const QMetaObject *_mo;
+    const QMetaObject *_supreme_mo;
     static meta_cache_t _meta_cache;
   };
 

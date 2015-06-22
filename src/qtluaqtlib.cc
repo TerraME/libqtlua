@@ -109,6 +109,12 @@ namespace QtLua {
     qt_meta._mo_table.insert(name, QMetaObjectWrapper(mo, creator));
   }
 
+  void qtlib_register_meta(const QMetaObject *mo, const QMetaObject *supreme_mo, qobject_creator *creator)
+  {
+      qtlib_register_meta(mo, creator);
+      MetaCache::create_meta(mo, supreme_mo);
+  }
+
 
   ////////////////////////////////////////////////// qobjects
 

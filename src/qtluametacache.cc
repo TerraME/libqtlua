@@ -30,8 +30,8 @@ namespace QtLua {
 
   meta_cache_t MetaCache::_meta_cache;
 
-  MetaCache::MetaCache(const QMetaObject *mo)
-    : _mo(mo)
+  MetaCache::MetaCache(const QMetaObject *mo, const QMetaObject *supreme_mo)
+    : _mo(mo), _supreme_mo(supreme_mo)
   {
     // Fill a set with existing member names in parent classes to
     // detect names collisions
@@ -63,7 +63,7 @@ namespace QtLua {
 #endif
 
 	String name(signature.constData(), signature.indexOf('('));
-
+        //if collision, assigned new name
 	while (existing.contains(name) || _member_cache.contains(name))
 	  name += "_m";
 
@@ -108,35 +108,42 @@ namespace QtLua {
   Member::ptr MetaCache::get_member(const String &name) const
   {
     const MetaCache *mc = this;
-    Member::ptr m;
-
-    for (m = _member_cache.value(name);
-	 !m.valid() && mc->_mo->superClass();
-	 m = (mc = &MetaCache::get_meta(mc->_mo->superClass()))->get_member(name))
-      ;
+    const QMetaObject *meta = _mo;
+    Member::ptr m = mc->_member_cache.value(name);
+    while(!m.valid() && mc->_mo != _supreme_mo) {
+        meta = mc->_mo->superClass();
+        if(meta) {
+            mc = &MetaCache::get_meta(meta);
+            m = mc->_member_cache.value(name);
+        }
+    }
 
     return m;
   }
 
   int MetaCache::get_enum_value(const String &name) const
   {
-    for (const QMetaObject *mo = _mo; mo; mo = mo->superClass())
+    for (const QMetaObject *mo = _mo; mo;
+         mo = (mo == _supreme_mo) ? 0x0 : mo->superClass())
       {
 	for (int i = 0; i < mo->enumeratorCount(); i++)
 	  {
 	    int index = mo->enumeratorOffset() + i;
 	    QMetaEnum me = mo->enumerator(index);
 
-	    if (!me.isValid())
-	      continue;
+            if(!me.isValid()) continue;
 
 	    int value = me.keyToValue(name);
-	    if (value >= 0)
-	      return value;
+            if(0 <= value) return value;
 	  }
       }
 
     return -1;
+  }
+
+  MetaCache & MetaCache::create_meta(const QMetaObject *mo, const QMetaObject *supreme_mo)
+  {
+    return _meta_cache.insert(mo, MetaCache(mo, supreme_mo)).value();
   }
 
   MetaCache & MetaCache::get_meta(const QMetaObject *mo)
@@ -146,7 +153,7 @@ namespace QtLua {
     if (i != _meta_cache.end())
       return i.value();
 
-    return _meta_cache.insert(mo, MetaCache(mo)).value();
+    return _meta_cache.insert(mo, MetaCache(mo, &QObject::staticMetaObject)).value();
   }
 
 }

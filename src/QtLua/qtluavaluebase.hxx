@@ -289,6 +289,15 @@ namespace QtLua {
     *this << v1 << v2 << v3 << v4 << v5 << v6;
   }
 
+  Value::List ValueBase::call(const QVariantList &args) const
+  {
+    ValueBase::List _args;
+    foreach(const QVariant &i, args) {
+      _args.push_back(Value(_st, i));
+    }
+    return call(_args);
+  }
+
   ValueBase::List ValueBase::operator() () const
   {
     return this->call(List());

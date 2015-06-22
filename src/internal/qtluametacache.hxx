@@ -28,7 +28,8 @@ namespace QtLua {
 
   MetaCache::MetaCache(const MetaCache &mc)
     : _member_cache(mc._member_cache),
-      _mo(mc._mo)
+      _mo(mc._mo),
+      _supreme_mo(mc._supreme_mo)
   {
   }
 
@@ -40,6 +41,11 @@ namespace QtLua {
   const QMetaObject * MetaCache::get_meta_object() const
   {
     return _mo;
+  }
+
+  const QMetaObject * MetaCache::get_supreme_meta_object() const
+  {
+      return _supreme_mo;
   }
 
   Member::ptr MetaCache::get_member_throw(const String &name) const

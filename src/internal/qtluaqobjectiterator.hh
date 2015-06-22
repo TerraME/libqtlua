@@ -72,6 +72,7 @@ private:
   QPointer<State> _ls;
   Ref<QObjectWrapper> _qow;
   MetaCache *_mc;
+  const QMetaObject *_supreme_mo;
   Current _cur;
   member_cache_t::const_iterator _it;
   int _child_id;

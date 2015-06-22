@@ -121,8 +121,17 @@ namespace QtLua {
   {
     String res(_mo->className());
 
-    if (_mo->superClass())
-      res += String(" : public ") + _mo->superClass()->className();
+    const MetaCache &mc = MetaCache::get_meta(_mo);
+    if (const QMetaObject *super = _mo->superClass()) {
+        const QMetaObject *supreme = mc.get_supreme_meta_object();
+        if(_mo == supreme) {
+            res += String(" : protected ") + super->className();
+        }
+        else {
+            res += String(" : public ") + super->className();
+        }
+        res += String(", supreme ") + supreme->className();
+    }
 
     return res;
   }
