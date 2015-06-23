@@ -124,6 +124,11 @@ namespace QtLua {
       MetaCache::create_meta(mo, supreme_mo);
   }
 
+  void qtlib_register_static_method(const QMetaObject *mo, const String &name, FunctionSignature func, const QList<String> &argv)
+  {
+      MetaCache::add_static_function(mo, name, func, argv);
+  }
+
 
   ////////////////////////////////////////////////// qobjects
 

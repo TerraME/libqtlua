@@ -29,6 +29,7 @@
 #include <QObject>
 #include <QHash>
 
+#include "qtluafunctionsignature.hh"
 #include "qtluastring.hh"
 #include "qtluavalue.hh"
 #include "qtluavalueref.hh"
@@ -48,6 +49,8 @@ namespace QtLua {
   void qtlib_register_meta(const QMetaObject *mo, qobject_creator *creator);
 
   void qtlib_register_meta(const QMetaObject *mo, const QMetaObject *supreme_mo, qobject_creator *creator);
+
+  void qtlib_register_static_method(const QMetaObject *mo, const String &name, FunctionSignature func, const QList<String> &argv);
 
   class UserData;
   class QObjectWrapper;
@@ -230,6 +233,11 @@ public:
    */
   template <class QObject_T>
   static inline void register_qobject_meta();
+  template <class QObject_T, class Supreme_T>
+  static inline void register_qobject_meta();
+
+  template <class QObject_T>
+  static inline void register_qobject_static_method(const String &name, FunctionSignature func, const QList<String> &argv);
 
   /**
    * @internal @This asserts internal lua stack is empty.
