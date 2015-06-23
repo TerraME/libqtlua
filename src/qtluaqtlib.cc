@@ -111,7 +111,7 @@ namespace QtLua {
 
   void qtlib_register_meta(const QMetaObject *mo, qobject_creator *creator)
   {
-    String name(mo->className());
+    String name(MetaCache::get_meta_name(mo));
     name.replace(':', '_');
     qt_meta->_mo_table.insert(name, QMetaObjectWrapper(mo, creator));
   }

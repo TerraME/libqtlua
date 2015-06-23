@@ -34,6 +34,12 @@ namespace QtLua {
   MetaCache::MetaCache(const QMetaObject *mo, const QMetaObject *supreme_mo)
     : _mo(mo), _supreme_mo(supreme_mo)
   {
+      int id = _mo->indexOfClassInfo("LuaName");
+      if(id != -1 && _mo->classInfoOffset() <= id) {
+          _lua_name = mo->classInfo(id).value();
+      }
+      else _lua_name = mo->className();
+
     // Fill a set with existing member names in parent classes to
     // detect names collisions
 
@@ -178,6 +184,12 @@ namespace QtLua {
       return i.value();
 
     return _meta_cache.insert(mo, MetaCache(mo, &QObject::staticMetaObject)).value();
+  }
+
+  String MetaCache::get_meta_name(const QMetaObject *mo)
+  {
+      MetaCache &mc = get_meta(mo);
+      return mc._lua_name;
   }
 
 }

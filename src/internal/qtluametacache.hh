@@ -66,6 +66,8 @@ namespace QtLua {
     inline static MetaCache & get_meta(const QObject &obj);
     /** Get cache meta information for a QMetaObject */
     static MetaCache & get_meta(const QMetaObject *mo);
+    /** Get meta object name by className() or classInfo("LuaName") */
+    static String get_meta_name(const QMetaObject *mo);
 
     /** Recursively search for memeber in class and parent classes */
     Ref<Member> get_member(const String &name) const;
@@ -93,6 +95,8 @@ namespace QtLua {
     const QMetaObject *_mo;
     const QMetaObject *_supreme_mo;
     static meta_cache_t _meta_cache;
+    //find class info "LuaName"
+    String _lua_name;
   };
 
 }

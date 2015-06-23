@@ -19,12 +19,8 @@
 
 */
 
-#include <QDebug>
-
-#include <cstring>
-
 #include <internal/QObjectWrapper>
-
+#include <internal/MetaCache>
 #include <internal/StaticFunction>
 #include <internal/QMetaValue>
 #include <internal/qtluapoolarray.hh>
@@ -60,7 +56,7 @@ namespace QtLua {
 
   String StaticFunction::get_value_str() const
   {
-    return _return_type_name + " " + _mo->className() + "::" + _name + "(" + _argvs_type_name + ")";
+    return _return_type_name + " " + MetaCache::get_meta_name(_mo) + "::" + _name + "(" + _argvs_type_name + ")";
   }
 
   bool StaticFunction::support(Value::Operation c) const

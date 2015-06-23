@@ -380,7 +380,7 @@ namespace QtLua {
 
   String QObjectWrapper::get_type_name() const
   {
-    return _obj ? _obj->metaObject()->className() : "";
+    return _obj ? MetaCache::get_meta_name(_obj->metaObject()) : "";
   }
 
   String QObjectWrapper::get_value_str() const
@@ -412,7 +412,7 @@ namespace QtLua {
       {
 	QString name;
 
-	name.sprintf("%s_%lx", obj.metaObject()->className(), (unsigned long)&obj);
+        name.sprintf("%s_%lx", MetaCache::get_meta_name(obj.metaObject()).constData(), (unsigned long)&obj);
 	obj.setObjectName(name.toLower());
       }
 

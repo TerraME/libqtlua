@@ -23,7 +23,7 @@
 #include <cstring>
 
 #include <internal/QObjectWrapper>
-
+#include <internal/MetaCache>
 #include <internal/Method>
 #include <internal/QMetaValue>
 #include <internal/qtluapoolarray.hh>
@@ -105,6 +105,7 @@ namespace QtLua {
             qt_args[i] = args.create(type, lua_args[i]).get_data();
           }
           else {//get object via wrapper
+
               QObjectWrapper::ptr qow_i = lua_args[i].to_userdata_cast<QObjectWrapper>();
 
               if (!qow_i.valid())
@@ -117,8 +118,8 @@ namespace QtLua {
               catch(String e) {
                 QTLUA_THROW(QtLua::Method, "`%' argument is nil value", .arg(i));
               }
-
-              qt_args[i] = obj_i;
+              if(pt.indexOf('*') != -1) qt_args[i] = Q_ARG(QObject*, obj_i).data();
+              else qt_args[i] = obj_i;
           }
 
 	  //	else
@@ -163,7 +164,7 @@ namespace QtLua {
     QMetaMethod mm = _mo->method(_index);
     const char * t = mm.typeName();
 
-    return String(*t ? t : "void") + " " + _mo->className() + "::"
+    return String(*t ? t : "void") + " " + MetaCache::get_meta_name(_mo) + "::"
 #if QT_VERSION < 0x050000
       + mm.signature();
 #else

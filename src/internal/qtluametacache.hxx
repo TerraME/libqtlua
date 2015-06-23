@@ -29,7 +29,8 @@ namespace QtLua {
   MetaCache::MetaCache(const MetaCache &mc)
     : _member_cache(mc._member_cache),
       _mo(mc._mo),
-      _supreme_mo(mc._supreme_mo)
+      _supreme_mo(mc._supreme_mo),
+      _lua_name(mc._lua_name)
   {
   }
 
