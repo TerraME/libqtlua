@@ -25,6 +25,7 @@
 #include <QHash>
 
 #include <QtLua/Ref>
+#include <QtLua/FunctionSignature>
 
 namespace QtLua {
 
@@ -58,6 +59,9 @@ namespace QtLua {
     inline MetaCache(const MetaCache &mc);
     /** Create cache meta information for a QMetaObject with supreme QMetaObject which limit member access. */
     static MetaCache & create_meta(const QMetaObject *mo, const QMetaObject *supreme_mo);
+    /** Add static function to existed cache meta information. */
+    static bool add_static_function(const QMetaObject *mo, const String &key, FunctionSignature func, QMetaType::Type argt[], int count);
+    static bool add_static_function(const QMetaObject *mo, const String &key, FunctionSignature func, const QList<String> &argv);
     /** Get cache meta information for a QObject */
     inline static MetaCache & get_meta(const QObject &obj);
     /** Get cache meta information for a QMetaObject */

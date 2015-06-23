@@ -25,6 +25,7 @@
 #include <internal/Enum>
 #include <internal/Property>
 #include <internal/MetaCache>
+#include <internal/StaticFunction>
 
 namespace QtLua {
 
@@ -145,6 +146,28 @@ namespace QtLua {
   MetaCache & MetaCache::create_meta(const QMetaObject *mo, const QMetaObject *supreme_mo)
   {
     return _meta_cache.insert(mo, MetaCache(mo, supreme_mo)).value();
+  }
+
+  bool MetaCache::add_static_function(const QMetaObject *mo, const String &key, FunctionSignature func, QMetaType::Type argt[], int count)
+  {
+      meta_cache_t::iterator i = _meta_cache.find(mo);
+      if(i != _meta_cache.end()) {
+          MetaCache &mc = i.value();
+          mc._member_cache.insert(key, QTLUA_REFNEW(StaticFunction, mo, key, func, argt, count));
+          return true;
+      }
+      else return false;
+  }
+
+  bool MetaCache::add_static_function(const QMetaObject *mo, const String &key, FunctionSignature func, const QList<String> &argv)
+  {
+      meta_cache_t::iterator i = _meta_cache.find(mo);
+      if(i != _meta_cache.end()) {
+          MetaCache &mc = i.value();
+          mc._member_cache.insert(key, QTLUA_REFNEW(StaticFunction, mo, key, func, argv));
+          return true;
+      }
+      else return false;
   }
 
   MetaCache & MetaCache::get_meta(const QMetaObject *mo)
