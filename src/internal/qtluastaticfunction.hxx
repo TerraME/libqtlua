@@ -15,8 +15,9 @@
     along with LibQtLua.  If not, see <http://www.gnu.org/licenses/>.
 
     Copyright (C) 2008, Alexandre Becoulet <alexandre.becoulet@free.fr>
-    Copyright (C) 2015, Kwueron Li <likwueron@gmail.com>
 
+    Fork
+    Copyright (C) 2015 (Li, Kwue-Ron) <likwueron@gmail.com>
 */
 
 

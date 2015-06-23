@@ -1,21 +1,24 @@
-This Project is fork from QtLua library which provide some feature I want.
-
-They are:
-Add QFlag QtLua::Librarys which provide OR combination when using QtLua::State.openlib()
-Add support for functions using QVariant as parameter or return value in script environment.
-
-The Following is Readme from the original one(2015/06/05):
-
-
-
-
 The QtLua library aims to make Qt4/Qt5 applications scriptable using
 the Lua scripting language.
 
+
 QtLua is released under the GNU LGPL v3 license.
 
-Project documentation can be found online:
+Project documentation can be found online:(Original one)
 http://www.nongnu.org/libqtlua/
+
+This fork project provide some features:
+- QFlag QtLua::Librarys which provide OR combination when using QtLua::State.openlib()
+- Methods can use QObject as parameter or return value without register via QtLua::MetaType
+- Value of QObject (via print()) can be costum by slot "QString toString()"
+- Register QObject can limit member access by setting "supreme meta object" which reject member access to it's super one
+- Name of QObject can be costum by Q_CLASSINFO("LuaName", NAME_YOU_WANT)
+- Can register static member method to registered QObject
+
+Those are not neccessary because of QtLua::MetaType. They added because I didn't notice that class.
+- Methods can use QVariant/QVariantList as parameter or return value in script environment.
+
+
 
 Build and install
 =================
@@ -39,3 +42,15 @@ CMake
     cmake ..
     make
     make install
+    
+Windows CMake MinGW32
+---------------------
+
+    OPEN Qt Command Prompt
+
+    set LUA_DIR=[location of lua]
+
+    cd libqtlua-x.x.x
+    cmake-gui
+    cd [where to build the binaries]
+    mingw32-make
