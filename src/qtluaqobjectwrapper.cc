@@ -396,7 +396,7 @@ namespace QtLua {
     }
     else {
         result = QString("0x%1(%2)")
-                .arg((int)_obj, 0, 16)
+                .arg((qulonglong)_obj, 0, 16)
                 .arg(qobject_name(*_obj).constData());
     }
     return result;
