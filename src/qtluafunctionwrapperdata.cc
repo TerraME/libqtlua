@@ -49,6 +49,7 @@ namespace QtLua {
   }
   FunctionWrapperData::FunctionWrapperData(FunctionSignature func, 
                                            const QList<String> argv)
+    : _func(func)
   {
     int count = argv.count();
     _argc = (count < defaultMaxCount) ? count : defaultMaxCount;
