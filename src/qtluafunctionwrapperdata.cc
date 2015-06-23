@@ -56,7 +56,8 @@ namespace QtLua {
         //generate return type
         _return_type_name = argv.at(0);
         //generate argv
-        foreach(const String &name, argv) {
+        for(int i = 1; i < _argc; i++) {
+            String name = argv.at(i);
             if(!name.isEmpty()) _argvs_type_name += name + ",";
         }
         _argvs_type_name.chop(1);
