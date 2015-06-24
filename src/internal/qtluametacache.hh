@@ -70,6 +70,12 @@ namespace QtLua {
     static MetaCache & get_meta(const QMetaObject *mo);
     /** Get meta object name by className() or classInfo("LuaName") */
     static String get_meta_name(const QMetaObject *mo);
+    /** Get index of toString slot which costum print() result*/
+    static int get_index_toString(const QObject &obj);
+    /** Get index of getDP slot which get dynamic property*/
+    static int get_index_getDP(const QObject &obj);
+    /** Get index of setDP slot which set dynamic property*/
+    static int get_index_setDP(const QObject &obj);
 
     /** Recursively search for memeber in class and parent classes */
     Ref<Member> get_member(const String &name) const;
@@ -92,13 +98,26 @@ namespace QtLua {
     /** Get supreme QMetaObject pointer for current QMetaObject pointer which should not affect others */
     inline const QMetaObject * get_supreme_meta_object() const;
 
+    /** Get index of slot toString for current QMetaObject */
+    int get_index_toString() const;
+
+    /** Get index of slot getDP for current QMetaObject */
+    int get_index_getDP() const;
+
+    /** Get index of slot setDP for current QMetaObject */
+    int get_index_setDP() const;
+
   private:
     member_cache_t _member_cache;
     const QMetaObject *_mo;
     const QMetaObject *_supreme_mo;
     static meta_cache_t _meta_cache;
-    //find class info "LuaName"
+    //classinfo "LuaName"
     String _lua_name;
+    //index of slots
+    int _index_toString;
+    int _index_setDP;
+    int _index_getDP;
   };
 
 }

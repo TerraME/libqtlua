@@ -129,8 +129,6 @@ namespace QtLua {
     int _lua_next_slot;
     bool _reparent;
     bool _delete;
-    //find toString method index
-    int _indexOfToString;
   };
 
 }

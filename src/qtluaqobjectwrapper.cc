@@ -43,8 +43,7 @@ namespace QtLua {
       _obj(obj),
       _lua_next_slot(1),
       _reparent(false),
-      _delete(obj && obj->parent()),
-      _indexOfToString(-1)
+      _delete(obj && obj->parent())
   {
 #ifdef QTLUA_QOBJECTWRAPPER_DEBUG
     qDebug() << "wrapper object created" << _obj;
@@ -55,14 +54,6 @@ namespace QtLua {
 	assert_do(QMetaObject::connect(obj, destroyindex, this, metaObject()->methodCount() + 0));
 
 	ls->_whash.insert(obj, this);
-        //get toString index
-        const QMetaObject *mo = _obj->metaObject();
-        int index = mo->indexOfMethod("toString()");
-        if(index != -1) {
-            if(mo->method(index).returnType() == QMetaType::QString) {
-                _indexOfToString = index;
-            }
-        }
 
 	// increment reference count since we are bound to a qobject
 	_inc();
@@ -297,9 +288,24 @@ namespace QtLua {
       return Value(ls, QObjectWrapper::get_wrapper(ls, child));
 
     // fallback to member read access
-    Member::ptr m = MetaCache::get_meta(obj).get_member(skey);
+    MetaCache &mc = MetaCache::get_meta(obj);
+    Member::ptr m = mc.get_member(skey);
 
-    return m.valid() ? m->access(*this) : Value(ls);
+    if(m.valid())
+      return m->access(*this);
+    else
+      {
+        int index = mc.get_index_getDP();
+        if(index != -1)
+          {
+            QVariant dp;
+            QByteArray name = skey;
+            void *argv[2] = {Q_RETURN_ARG(QVariant, dp).data(), Q_ARG(QByteArray, name).data()};
+            obj.qt_metacall(QMetaObject::InvokeMetaMethod, index, argv);
+            return Value(ls, dp);
+          }
+        else return Value(ls);
+      }
   }
 
   void QObjectWrapper::reparent(QObject *parent)
@@ -343,14 +349,27 @@ namespace QtLua {
       }
     else
       {
+        MetaCache &mc = MetaCache::get_meta(obj);
 	// fallback to member write access
-	Member::ptr m = MetaCache::get_meta(obj).get_member(skey);
+        Member::ptr m = mc.get_member(skey);
 
 	if (m.valid())
 	  {
 	    m->assign(*this, value);
 	    return;
 	  }
+        else
+          {
+            int index = mc.get_index_setDP();
+            if(index != -1)
+            {
+              QVariant dp = value.to_qvariant();
+              QByteArray name = skey;
+              void *argv[3] = {0x0, Q_ARG(QByteArray, name).data(), Q_ARG(QVariant, dp).data()};
+              obj.qt_metacall(QMetaObject::InvokeMetaMethod, index, argv);
+              return;
+            }
+          }
       }
 
     // child insertion
@@ -389,16 +408,19 @@ namespace QtLua {
   {
     if(!_obj) return "(deleted)";
     QString result;
-    if(_indexOfToString != -1) {
+    int index = MetaCache::get_index_toString(*_obj);
+    if(index != -1)
+      {
         void *args[1] = {static_cast<void*>(&result)};
-        _obj->qt_metacall(QMetaObject::InvokeMetaMethod, _indexOfToString, args);
+        _obj->qt_metacall(QMetaObject::InvokeMetaMethod, index, args);
 
-    }
-    else {
+      }
+    else
+      {
         result = QString("0x%1(%2)")
                 .arg((qulonglong)_obj, 0, 16)
                 .arg(qobject_name(*_obj).constData());
-    }
+      }
     return result;
   }
 

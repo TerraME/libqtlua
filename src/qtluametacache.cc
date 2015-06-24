@@ -34,13 +34,44 @@ namespace QtLua {
   meta_cache_t MetaCache::_meta_cache;
 
   MetaCache::MetaCache(const QMetaObject *mo, const QMetaObject *supreme_mo)
-    : _mo(mo), _supreme_mo(supreme_mo)
+    : _mo(mo), _supreme_mo(supreme_mo),
+      _index_toString(-1), _index_setDP(-1), _index_getDP(-1)
   {
-      int id = _mo->indexOfClassInfo("LuaName");
-      if(id != -1 && _mo->classInfoOffset() <= id) {
-          _lua_name = mo->classInfo(id).value();
-      }
-      else _lua_name = mo->className();
+    //get Lua name if exist
+    {
+      int index = _mo->indexOfClassInfo("LuaName");
+      if(index != -1 && _mo->classInfoOffset() <= index)
+          _lua_name = _mo->classInfo(index).value();
+      else _lua_name = _mo->className();
+    }
+    int method_offset = _supreme_mo->methodOffset();
+    //get index of toString
+    {
+      int index = _mo->indexOfMethod("toString()");
+      if(index != -1 && method_offset <= index)
+        {
+          if(mo->method(index).returnType() == QMetaType::QString)
+              _index_toString = index;
+        }
+    }
+    //get index of getDP
+    {
+      int index = _mo->indexOfMethod("getDP(QByteArray)");
+      if(index != -1 && method_offset <= index)
+        {
+          if(mo->method(index).returnType() == QMetaType::QVariant)
+              _index_getDP = index;
+        }
+    }
+    //get index of setDP
+    {
+      int index = _mo->indexOfMethod("setDP(QByteArray,QVariant)");
+      if(index != -1 && method_offset <= index)
+        {
+          if(mo->method(index).returnType() == QMetaType::Void)
+              _index_setDP = index;
+        }
+    }
 
     // Fill a set with existing member names in parent classes to
     // detect names collisions
@@ -190,9 +221,41 @@ namespace QtLua {
 
   String MetaCache::get_meta_name(const QMetaObject *mo)
   {
-      MetaCache &mc = get_meta(mo);
-      return mc._lua_name;
+    MetaCache &mc = get_meta(mo);
+    return mc._lua_name;
   }
 
+  int MetaCache::get_index_toString(const QObject &obj)
+  {
+    MetaCache &mc = get_meta(obj);
+    return mc._index_toString;
+  }
+
+  int MetaCache::get_index_getDP(const QObject &obj)
+  {
+    MetaCache &mc = get_meta(obj);
+    return mc._index_getDP;
+  }
+
+  int MetaCache::get_index_setDP(const QObject &obj)
+  {
+    MetaCache &mc = get_meta(obj);
+    return mc._index_setDP;
+  }
+
+  int MetaCache::get_index_toString() const
+  {
+    return _index_toString;
+  }
+
+  int MetaCache::get_index_getDP() const
+  {
+    return _index_getDP;
+  }
+
+  int MetaCache::get_index_setDP() const
+  {
+    return _index_setDP;
+  }
 }
 
