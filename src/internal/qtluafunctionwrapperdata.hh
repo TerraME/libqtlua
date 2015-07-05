@@ -44,7 +44,11 @@ namespace QtLua {
   class FunctionWrapperData
   {
   public:
+#if QT_VERSION < QT_VERSION_CHECK(5, 2, 0)
+    static const int defaultMaxCount = 11;
+#else
     static const int defaultMaxCount = Q_METAMETHOD_INVOKE_MAX_ARGS + 1;
+#endif
     FunctionWrapperData(FunctionSignature func, 
                         const QMetaType::Type argt_array[], int count);
     FunctionWrapperData(FunctionSignature func, 

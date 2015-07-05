@@ -118,10 +118,10 @@ namespace QtLua {
     qt_meta->_mo_table.insert(name, QMetaObjectWrapper(mo, creator));
   }
 
-  void qtlib_register_meta(const QMetaObject *mo, const QMetaObject *supreme_mo, qobject_creator *creator)
+  void qtlib_register_meta(const QMetaObject *mo, const QMetaObject *supreme_mo, bool auto_property, qobject_creator *creator)
   {
       qtlib_register_meta(mo, creator);
-      MetaCache::create_meta(mo, supreme_mo);
+      MetaCache::create_meta(mo, supreme_mo, auto_property);
   }
 
   void qtlib_register_static_method(const QMetaObject *mo, const String &name, FunctionSignature func, const QList<String> &argv)

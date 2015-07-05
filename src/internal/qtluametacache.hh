@@ -54,13 +54,13 @@ namespace QtLua {
   {
     friend class QObjectWrapper;
 
-    MetaCache(const QMetaObject *mo, const QMetaObject *supreme_mo);
+    MetaCache(const QMetaObject *mo, const QMetaObject *supreme_mo, bool auto_property);
 
   public:
     /** Copy constructor */
     inline MetaCache(const MetaCache &mc);
     /** Create cache meta information for a QMetaObject with supreme QMetaObject which limit member access. */
-    static MetaCache & create_meta(const QMetaObject *mo, const QMetaObject *supreme_mo);
+    static MetaCache & create_meta(const QMetaObject *mo, const QMetaObject *supreme_mo, bool auto_property);
     /** Add static function to existed cache meta information. */
     static bool add_static_function(const QMetaObject *mo, const String &key, FunctionSignature func, QMetaType::Type argt[], int count);
     static bool add_static_function(const QMetaObject *mo, const String &key, FunctionSignature func, const QList<String> &argv);
@@ -107,6 +107,9 @@ namespace QtLua {
     /** Get index of slot setDP for current QMetaObject */
     int get_index_setDP() const;
 
+    /** Can use property() setProperty()*/
+    bool can_auto_property() const;
+
   private:
     member_cache_t _member_cache;
     const QMetaObject *_mo;
@@ -118,6 +121,8 @@ namespace QtLua {
     int _index_toString;
     int _index_setDP;
     int _index_getDP;
+    //auto set/get property, will be override if has setDP/getDP
+    int _auto_property;
   };
 
 }

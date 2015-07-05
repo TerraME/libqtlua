@@ -304,6 +304,9 @@ namespace QtLua {
             obj.qt_metacall(QMetaObject::InvokeMetaMethod, index, argv);
             return Value(ls, dp);
           }
+        else if(mc.can_auto_property()) {
+            return Value(ls, obj.property(skey));
+        }
         else return Value(ls);
       }
   }
@@ -368,6 +371,10 @@ namespace QtLua {
               void *argv[3] = {0x0, Q_ARG(QByteArray, name).data(), Q_ARG(QVariant, dp).data()};
               obj.qt_metacall(QMetaObject::InvokeMetaMethod, index, argv);
               return;
+            }
+            else if(mc.can_auto_property()) {
+                obj.setProperty(skey, value.to_qvariant());
+                return;
             }
           }
       }

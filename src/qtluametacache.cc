@@ -33,9 +33,10 @@ namespace QtLua {
 
   meta_cache_t MetaCache::_meta_cache;
 
-  MetaCache::MetaCache(const QMetaObject *mo, const QMetaObject *supreme_mo)
+  MetaCache::MetaCache(const QMetaObject *mo, const QMetaObject *supreme_mo, bool auto_property)
     : _mo(mo), _supreme_mo(supreme_mo),
-      _index_toString(-1), _index_setDP(-1), _index_getDP(-1)
+      _index_toString(-1), _index_setDP(-1), _index_getDP(-1),
+      _auto_property(auto_property)
   {
     //get Lua name if exist
     {
@@ -182,9 +183,9 @@ namespace QtLua {
     return -1;
   }
 
-  MetaCache & MetaCache::create_meta(const QMetaObject *mo, const QMetaObject *supreme_mo)
+  MetaCache & MetaCache::create_meta(const QMetaObject *mo, const QMetaObject *supreme_mo, bool auto_property)
   {
-    return _meta_cache.insert(mo, MetaCache(mo, supreme_mo)).value();
+    return _meta_cache.insert(mo, MetaCache(mo, supreme_mo, auto_property)).value();
   }
 
   bool MetaCache::add_static_function(const QMetaObject *mo, const String &key, FunctionSignature func, QMetaType::Type argt[], int count)
@@ -216,7 +217,7 @@ namespace QtLua {
     if (i != _meta_cache.end())
       return i.value();
 
-    return _meta_cache.insert(mo, MetaCache(mo, &QObject::staticMetaObject)).value();
+    return _meta_cache.insert(mo, MetaCache(mo, &QObject::staticMetaObject, false)).value();
   }
 
   String MetaCache::get_meta_name(const QMetaObject *mo)
@@ -256,6 +257,11 @@ namespace QtLua {
   int MetaCache::get_index_setDP() const
   {
     return _index_setDP;
+  }
+
+  bool MetaCache::can_auto_property() const
+  {
+      return _auto_property;
   }
 }
 
