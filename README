@@ -9,14 +9,16 @@ http://www.nongnu.org/libqtlua/
 
 This fork project provide some features:
 - QFlag QtLua::Librarys which provide OR combination when using QtLua::State.openlib()
-- Methods can use QObject as parameter or return value without register via QtLua::MetaType
 - Value of QObject (via print()) can be costum by slot "QString toString()"
 - Register QObject can limit member access by setting "supreme meta object" which reject member access to it's super one
 - Name of QObject can be costum by Q_CLASSINFO("LuaName", NAME_YOU_WANT)
 - Can register static member method to registered QObject
 
-Those are not neccessary because of QtLua::MetaType. They added because I didn't notice that class.
+Those are not neccessary because of QtLua::MetaType. They added because I didn't notice that class before.
 - Methods can use QVariant/QVariantList as parameter or return value in script environment.
+
+Those are once add but removed due to they'll cause crash in some situation:
+- Methods can use QObject as parameter or return value without register via QtLua::MetaType
 
 
 

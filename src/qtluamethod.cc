@@ -70,16 +70,8 @@ namespace QtLua {
     void *qt_args[11];
 
     // return value
-    QObject *robj = 0x0;
-    const char *rTypeName = mm.typeName();
-    if (rTypeName) {
-        int type = QMetaType::type(rTypeName);
-        if(type != QMetaType::UnknownType) {
-            qt_args[0] = args.create(QMetaType::type(mm.typeName())).get_data();
-        }
-        else {//construct object via metaobject system
-            qt_args[0] = Q_RETURN_ARG(QObject*, robj).data();
-        }
+    if (*mm.typeName()) {
+        qt_args[0] = args.create(QMetaType::type(mm.typeName())).get_data();
     }
     else
       qt_args[0] = 0;
@@ -100,32 +92,7 @@ namespace QtLua {
     foreach (const QByteArray &pt, pt)
       {
 	assert(i < 11);
-
-	//	if (i <= lua_args.size())
-          int type = QMetaType::type(pt.constData());
-          if(QMetaType::UnknownType != type) {
-            qt_args[i] = args.create(type, lua_args[i]).get_data();
-          }
-          else {//get object via wrapper
-
-              QObjectWrapper::ptr qow_i = lua_args[i].to_userdata_cast<QObjectWrapper>();
-
-              if (!qow_i.valid())
-                QTLUA_THROW(QtLua::Method, "`%' argument is unknown", .arg(i));
-
-              QObject *obj_i = 0x0;
-              try {
-                obj_i = &(qow_i->get_object());
-              }
-              catch(String e) {
-                QTLUA_THROW(QtLua::Method, "`%' argument is nil value", .arg(i));
-              }
-              if(pt.indexOf('*') != -1) qt_args[i] = Q_ARG(QObject*, obj_i).data();
-              else qt_args[i] = obj_i;
-          }
-
-	  //	else
-	  //	  qt_args[i] = args.create(QMetaType::type(pt.constData())).get_data();
+        qt_args[i] = args.create(QMetaType::type(pt.constData()), lua_args[i]).get_data();
 	i++;
       }
 
@@ -138,10 +105,7 @@ namespace QtLua {
 		  .arg(mm.methodSignature()));
 #endif
 
-    if(robj) {
-        return Value::List() << Value(ls, robj, true, true);
-    }
-    else if (qt_args[0]) {
+    if (qt_args[0]) {
         return args[0].to_value(ls);
     }
     else
