@@ -123,6 +123,11 @@ namespace QtLua {
       qtlib_register_meta(mo, creator);
       MetaCache::create_meta(mo, supreme_mo, auto_property);
   }
+  
+  void qtlib_enable_meta_auto_property(const QMetaObject *mo, bool enable)
+  {
+    MetaCache::get_meta(mo).enable_auto_property(enable);
+  }
 
   void qtlib_register_static_method(const QMetaObject *mo, const String &name, FunctionSignature func, const QList<String> &argv)
   {

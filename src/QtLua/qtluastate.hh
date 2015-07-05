@@ -49,6 +49,8 @@ namespace QtLua {
   void qtlib_register_meta(const QMetaObject *mo, qobject_creator *creator);
 
   void qtlib_register_meta(const QMetaObject *mo, const QMetaObject *supreme_mo, bool auto_property, qobject_creator *creator);
+  
+  void qtlib_enable_meta_auto_property(const QMetaObject *mo, bool enable);
 
   void qtlib_register_static_method(const QMetaObject *mo, const String &name, FunctionSignature func, const QList<String> &argv);
 

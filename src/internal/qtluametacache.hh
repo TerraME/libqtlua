@@ -109,6 +109,7 @@ namespace QtLua {
 
     /** Can use property() setProperty()*/
     bool can_auto_property() const;
+    void enable_auto_property(bool enable);
 
   private:
     member_cache_t _member_cache;

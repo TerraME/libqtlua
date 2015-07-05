@@ -263,5 +263,10 @@ namespace QtLua {
   {
       return _auto_property;
   }
+
+  void MetaCache::enable_auto_property(bool enable)
+  {
+      _auto_property = enable;
+  }
 }
 

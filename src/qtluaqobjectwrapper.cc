@@ -361,30 +361,39 @@ namespace QtLua {
 	    m->assign(*this, value);
 	    return;
 	  }
-        else
-          {
-            int index = mc.get_index_setDP();
-            if(index != -1)
-            {
-              QVariant dp = value.to_qvariant();
-              QByteArray name = skey;
-              void *argv[3] = {0x0, Q_ARG(QByteArray, name).data(), Q_ARG(QVariant, dp).data()};
-              obj.qt_metacall(QMetaObject::InvokeMetaMethod, index, argv);
-              return;
-            }
-            else if(mc.can_auto_property()) {
-                obj.setProperty(skey, value.to_qvariant());
-                return;
-            }
-          }
       }
 
-    // child insertion
-    QObjectWrapper::ptr vw = value.to_userdata_cast<QObjectWrapper>();
-    QObject &vobj = vw->get_object();
+    switch(value.type()) {
+    case ValueBase::TUserData: {
+        // child insertion
+        QObjectWrapper::ptr vw = value.to_userdata_cast<QObjectWrapper>();
+        QObject &vobj = vw->get_object();
 
-    vobj.setObjectName(skey.to_qstring());
-    vw->reparent(&obj);
+        vobj.setObjectName(skey.to_qstring());
+        vw->reparent(&obj);
+    break; }
+    case ValueBase::TNumber:
+    case ValueBase::TBool:
+    case ValueBase::TString:
+    case ValueBase::TTable: {
+        MetaCache &mc = MetaCache::get_meta(obj);
+        int index = mc.get_index_setDP();
+        if(index != -1)
+        {
+          QVariant dp = value.to_qvariant();
+          QByteArray name = skey;
+          void *argv[3] = {0x0, Q_ARG(QByteArray, name).data(), Q_ARG(QVariant, dp).data()};
+          obj.qt_metacall(QMetaObject::InvokeMetaMethod, index, argv);
+        }
+        else if(mc.can_auto_property()) {
+            obj.setProperty(skey, value.to_qvariant());
+        }
+    break; }
+    default:
+        QTLUA_THROW(QtLua::QObjectWrapper, "Cannot assign value type `%' to QObject",
+                    .arg(value.type_name()));
+        break;
+    }
   }
 
   Ref<Iterator> QObjectWrapper::new_iterator(State *ls)
