@@ -739,78 +739,20 @@ void State::check_empty_stack() const
 }
 
 State::State()
+  : _state_ownership(true)
 {
-  assert(Value::TNone == LUA_TNONE);
-  assert(Value::TNil == LUA_TNIL);
-  assert(Value::TBool == LUA_TBOOLEAN);
-  assert(Value::TNumber == LUA_TNUMBER);
-  assert(Value::TString == LUA_TSTRING);
-  assert(Value::TTable == LUA_TTABLE);
-  assert(Value::TFunction == LUA_TFUNCTION);
-  assert(Value::TUserData == LUA_TUSERDATA);
-  assert(Value::TThread == LUA_TTHREAD);
-  create_qmeta_object_table();
-
 #if LUA_VERSION_NUM < 501
-  _mst = _lst = lua_open();
+  lua_State	*L = lua_open();
 #else
-  _mst = _lst = luaL_newstate();
+  lua_State	*L = luaL_newstate();
 #endif
+  init(L);
+}
 
-  if (!_mst)
-    throw std::bad_alloc();
-
-  // creat metatable for UserData events
-
-  lua_pushlightuserdata(_mst, &_key_item_metatable);
-  lua_newtable(_mst);
-
-#define LUA_META_BIND(n)			\
-  lua_pushstring(_mst, "__" #n);			\
-  lua_pushcfunction(_mst, lua_meta_item_##n);	\
-  lua_rawset(_mst, -3);
-
-  LUA_META_BIND(add);
-  LUA_META_BIND(sub);
-  LUA_META_BIND(mul);
-  LUA_META_BIND(div);
-  LUA_META_BIND(mod);
-  LUA_META_BIND(pow);
-  LUA_META_BIND(unm);
-  LUA_META_BIND(concat);
-  LUA_META_BIND(len);
-  LUA_META_BIND(eq);
-  LUA_META_BIND(lt);
-  LUA_META_BIND(le);
-  LUA_META_BIND(index);
-  LUA_META_BIND(newindex);
-  LUA_META_BIND(call);
-  LUA_META_BIND(gc);
-
-  lua_rawset(_mst, LUA_REGISTRYINDEX);
-
-  // pointer to this
-
-  lua_pushlightuserdata(_mst, &_key_this);
-  lua_pushlightuserdata(_mst, this);
-  lua_rawset(_mst, LUA_REGISTRYINDEX);
-
-#if LUA_VERSION_NUM < 501
-  // create a weak table for threads, substitute for lua_pushthread
-  lua_pushlightuserdata(_mst, &_key_threads);
-  lua_newtable(_mst);
-
-  lua_newtable(_mst);    // metatable for weak table mode
-  lua_pushstring(_mst, "__mode");
-  lua_pushstring(_mst, "v");
-  lua_rawset(_mst, -3);
-  lua_setmetatable(_mst, -2);
-
-  lua_rawset(_mst, LUA_REGISTRYINDEX);
-#endif
-
-  _debug_output = false;
-  _yield_on_return = false;
+State::State(lua_State	*L)
+  : _state_ownership(false)
+{
+  init(L);
 }
 
 State::~State()
@@ -820,7 +762,8 @@ State::~State()
     w->_lua_disconnect_all();
 
   // lua state close
-  lua_close(_mst);
+  if(_state_ownership)
+    lua_close(_mst);
 
   // wipe QObjectWrapper objects
   wrapper_hash_t::const_iterator i;
@@ -1066,6 +1009,104 @@ bool State::openlib(Librarys lib)
     return hasSetted;
 }
 
+bool State::openlib(Library lib)
+{
+  switch (lib)
+    {
+    case CoroutineLib:
+ #if LUA_VERSION_NUM >= 502
+       QTLUA_LUA_CALL(_lst, luaopen_coroutine, "coroutine");
+       return true;
+ #endif
+    case BaseLib:
+      QTLUA_LUA_CALL(_lst, luaopen_base, "_G");
+      return true;
+ #ifdef HAVE_LUA_PACKAGELIB
+    case PackageLib:
+       QTLUA_LUA_CALL(_lst, luaopen_package, "package");
+       return true;
+ #endif
+    case StringLib:
+       QTLUA_LUA_CALL(_lst, luaopen_string, "string");
+       return true;
+    case TableLib:
+       QTLUA_LUA_CALL(_lst, luaopen_table, "table");
+       return true;
+    case MathLib:
+       QTLUA_LUA_CALL(_lst, luaopen_math, "math");
+       return true;
+    case IoLib:
+       QTLUA_LUA_CALL(_lst, luaopen_io, "io");
+       return true;
+ #ifdef HAVE_LUA_OSLIB
+    case OsLib:
+      QTLUA_LUA_CALL(_lst, luaopen_os, "os");
+      return true;
+ #endif
+    case DebugLib:
+      QTLUA_LUA_CALL(_lst, luaopen_debug, "debug");
+      return true;
+
+#if LUA_VERSION_NUM >= 502
+    case Bit32Lib:
+      QTLUA_LUA_CALL(_lst, luaopen_bit32, "bit32");
+      return true;
+#endif
+
+#ifdef HAVE_LUA_JITLIB
+    case JitLib:
+      QTLUA_LUA_CALL(_lst, luaopen_jit, "jit");
+      return true;
+#endif
+#ifdef HAVE_LUA_FFILIB
+    case FfiLib:
+      QTLUA_LUA_CALL(_lst, luaopen_ffi, "ffi");
+      return true;
+#endif
+
+    case AllLibs:
+#if LUA_VERSION_NUM >= 502
+      QTLUA_LUA_CALL(_lst, luaopen_coroutine, "coroutine");
+      QTLUA_LUA_CALL(_lst, luaopen_bit32, "bit32");
+#endif
+#ifdef HAVE_LUA_OSLIB
+      QTLUA_LUA_CALL(_lst, luaopen_os, "os");
+#endif
+#ifdef HAVE_LUA_PACKAGELIB
+      QTLUA_LUA_CALL(_lst, luaopen_package, "package");
+#endif
+      QTLUA_LUA_CALL(_lst, luaopen_base, "_G");
+      QTLUA_LUA_CALL(_lst, luaopen_string, "string");
+      QTLUA_LUA_CALL(_lst, luaopen_table, "table");
+      QTLUA_LUA_CALL(_lst, luaopen_math, "math");
+      QTLUA_LUA_CALL(_lst, luaopen_io, "io");
+      QTLUA_LUA_CALL(_lst, luaopen_debug, "debug");
+#ifdef HAVE_LUA_JITLIB
+      QTLUA_LUA_CALL(_lst, luaopen_jit, "jit");
+#endif
+#ifdef HAVE_LUA_FFILIB
+      QTLUA_LUA_CALL(_lst, luaopen_ffi, "ffi");
+#endif
+      qtluaopen_qt(this);
+
+    case QtLuaLib:
+      reg_c_function("print", lua_cmd_print);
+      reg_c_function("list", lua_cmd_list);
+      reg_c_function("each", lua_cmd_each);
+      reg_c_function("help", lua_cmd_help);
+      reg_c_function("plugin", lua_cmd_plugin);
+      reg_c_function("qtype", lua_cmd_qtype);
+      return true;
+
+    case QtLib:
+      qtluaopen_qt(this);
+      return true;
+
+    default:
+      return false;
+    }
+ }
+
 int State::lua_version() const
 {
 #if LUA_VERSION_NUM < 501
@@ -1185,6 +1226,76 @@ void State::fill_completion_list(const QString &prefix, QStringList &list, int &
   String path;
 
   fill_completion_list_r(path, prefix, list, Value::new_global_env(this), cursor_offset);
+}
+
+void State::init(lua_State *L)
+{
+  assert(Value::TNone == LUA_TNONE);
+  assert(Value::TNil == LUA_TNIL);
+  assert(Value::TBool == LUA_TBOOLEAN);
+  assert(Value::TNumber == LUA_TNUMBER);
+  assert(Value::TString == LUA_TSTRING);
+  assert(Value::TTable == LUA_TTABLE);
+  assert(Value::TFunction == LUA_TFUNCTION);
+  assert(Value::TUserData == LUA_TUSERDATA);
+  assert(Value::TThread == LUA_TTHREAD);
+  create_qmeta_object_table();
+  _mst = _lst = L;
+
+  if (!_mst)
+    throw std::bad_alloc();
+
+  // creat metatable for UserData events
+
+  lua_pushlightuserdata(_mst, &_key_item_metatable);
+  lua_newtable(_mst);
+
+#define LUA_META_BIND(n)			\
+  lua_pushstring(_mst, "__" #n);			\
+  lua_pushcfunction(_mst, lua_meta_item_##n);	\
+  lua_rawset(_mst, -3);
+
+  LUA_META_BIND(add);
+  LUA_META_BIND(sub);
+  LUA_META_BIND(mul);
+  LUA_META_BIND(div);
+  LUA_META_BIND(mod);
+  LUA_META_BIND(pow);
+  LUA_META_BIND(unm);
+  LUA_META_BIND(concat);
+  LUA_META_BIND(len);
+  LUA_META_BIND(eq);
+  LUA_META_BIND(lt);
+  LUA_META_BIND(le);
+  LUA_META_BIND(index);
+  LUA_META_BIND(newindex);
+  LUA_META_BIND(call);
+  LUA_META_BIND(gc);
+
+  lua_rawset(_mst, LUA_REGISTRYINDEX);
+
+  // pointer to this
+
+  lua_pushlightuserdata(_mst, &_key_this);
+  lua_pushlightuserdata(_mst, this);
+  lua_rawset(_mst, LUA_REGISTRYINDEX);
+
+#if LUA_VERSION_NUM < 501
+  // create a weak table for threads, substitute for lua_pushthread
+  lua_pushlightuserdata(_mst, &_key_threads);
+  lua_newtable(_mst);
+
+  lua_newtable(_mst);    // metatable for weak table mode
+  lua_pushstring(_mst, "__mode");
+  lua_pushstring(_mst, "v");
+  lua_rawset(_mst, -3);
+  lua_setmetatable(_mst, -2);
+
+  lua_rawset(_mst, LUA_REGISTRYINDEX);
+#endif
+
+  _debug_output = false;
+  _yield_on_return = false;
 }
 
 }

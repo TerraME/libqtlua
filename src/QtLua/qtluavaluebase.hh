@@ -546,7 +546,7 @@ public:
    */
   bool disconnect(QObject *obj, const char *signal);
 
-protected:
+public:
   /** @internal */
   template <typename HashContainer>
   HashContainer to_hash() const;

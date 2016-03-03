@@ -122,6 +122,7 @@ public:
 
   State();
 
+  State(lua_State	*L);
   /** 
    * Lua interpreter state is checked for remaining @ref Value objects
    * with references to @ref UserData objects when destroyed.
@@ -213,6 +214,8 @@ public:
    * @xsee{QtLua lua libraries}
    */
   bool openlib(Librarys lib);
+  
+  bool openlib(Library lib);
 
   /** 
    * Call given function pointer with internal @ref lua_State
@@ -288,6 +291,8 @@ signals:
 
 private:
 
+  void init(lua_State *L);	
+  
   inline void output_str(const String &str);
 
   // get pointer to lua state object from lua state
@@ -345,6 +350,7 @@ private:
   lua_State	*_lst;      //< current thread state
   bool          _yield_on_return;
   bool          _debug_output;
+  bool _state_ownership;
 };
 
 }
