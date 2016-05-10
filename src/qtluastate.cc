@@ -441,7 +441,14 @@ void State::lua_pgettable(lua_State *st, int index)
   if (lua_type(st, index) == LUA_TTABLE)
     {
       if (!lua_getmetatable(st, index))
-	return lua_rawget(st, index);
+        {
+#if LUA_VERSION_NUM < 503
+	      return lua_rawget(st, index);
+#else
+          lua_rawget(st, index);
+          return;
+#endif
+        }
       lua_pop(st, 1);
     }
 
