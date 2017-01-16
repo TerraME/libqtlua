@@ -12,6 +12,11 @@ SET(INSTALL_BIN bin CACHE PATH "Where to install binaries to.")
 SET(INSTALL_LIB lib CACHE PATH "Where to install libraries to.")
 SET(INSTALL_INC include CACHE PATH "Where to install headers to.")
 
+IF(MSVC)
+	set(CMAKE_DEBUG_POSTFIX "d")
+	add_definitions(/MP)
+ENDIF()
+
 # Find Qt4
 #	SET(QT_USE_QTUITOOLS 1)
 #	SET(QT_USE_QTXML 1)

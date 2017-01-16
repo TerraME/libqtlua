@@ -1,6 +1,3 @@
-
-SET(QTLUA_LIB_SRCS )
-
 # Generate moc files
 
 QT5_WRAP_CPP(MOC_OUTFILES QtLua/qtluaconsole.hh        OPTIONS -fQtLua/Console)
@@ -13,9 +10,9 @@ QT5_WRAP_CPP(MOC_OUTFILES QtLua/qtluatablegridmodel.hh OPTIONS -fQtLua/TableGrid
 QT5_WRAP_CPP(MOC_OUTFILES QtLua/qtluastate.hh          OPTIONS -fQtLua/State)
 QT5_WRAP_CPP(MOC_OUTFILES qtluaqtlib.hh)
 
-ADD_LIBRARY(qtlua SHARED 
 
-            qtluaconsole.cc qtluaenum.cc
+SET(QTLUA_LIB_SRCS
+			qtluaconsole.cc qtluaenum.cc
             qtluaenumiterator.cc qtluafunction.cc
             qtluauseritem.cc qtluauseritemmodel.cc
             qtluauseritemselectionmodel.cc
@@ -32,16 +29,37 @@ ADD_LIBRARY(qtlua SHARED
             qtluavaluebase.cc qtluavalue.cc
             qtluavalueref.cc qtluadispatchproxy.cc
             qtluafunctionwrapperdata.cc qtluastaticfunction.cc
-
             ${MOC_OUTFILES})
 
-QT5_USE_MODULES(qtlua Widgets Core)
+IF(MSVC)
+	ADD_LIBRARY(qtlua_shared SHARED ${QTLUA_LIB_SRCS})
+	ADD_LIBRARY(qtlua_static STATIC ${QTLUA_LIB_SRCS})
 
-TARGET_LINK_LIBRARIES(qtlua ${QT_LIBRARIES} ${LUA_LIBRARIES})
+	QT5_USE_MODULES(qtlua_shared Widgets Core)
+	QT5_USE_MODULES(qtlua_static Widgets Core)
 
-INSTALL(TARGETS qtlua
-	LIBRARY DESTINATION ${INSTALL_LIB}
-	ARCHIVE DESTINATION ${INSTALL_LIB})
+	TARGET_LINK_LIBRARIES(qtlua_shared ${QT_LIBRARIES} ${LUA_LIBRARIES})
+	TARGET_LINK_LIBRARIES(qtlua_static ${QT_LIBRARIES} ${LUA_LIBRARIES})
+	
+	SET_TARGET_PROPERTIES(qtlua_shared PROPERTIES OUTPUT_NAME qtlua CLEAN_DIRECT_OUTPUT 1)
+	SET_TARGET_PROPERTIES(qtlua_static PROPERTIES OUTPUT_NAME qtlua CLEAN_DIRECT_OUTPUT 1)	
+	
+	INSTALL(TARGETS qtlua_shared qtlua_static
+		RUNTIME DESTINATION ${INSTALL_BIN}
+		LIBRARY DESTINATION ${INSTALL_LIB}
+		ARCHIVE DESTINATION ${INSTALL_LIB})		
+ELSE()			
+	ADD_LIBRARY(qtlua SHARED ${QTLUA_LIB_SRCS})
+	
+	QT5_USE_MODULES(qtlua Widgets Core)
+	
+	TARGET_LINK_LIBRARIES(qtlua ${QT_LIBRARIES} ${LUA_LIBRARIES})
+
+	INSTALL(TARGETS qtlua
+		LIBRARY DESTINATION ${INSTALL_LIB}
+		ARCHIVE DESTINATION ${INSTALL_LIB})	
+ENDIF()
+
 
 INSTALL(FILES
         QtLua/Function           QtLua/qtluafunction.hh        QtLua/qtluafunction.hxx 
