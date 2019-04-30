@@ -30,10 +30,18 @@ ENDIF()
 	FIND_PACKAGE(Qt5Xml)
 #	SET(CMAKE_AUTOMOC ON)
 
-# Find Lua 
+# Find Lua
 	FIND_PACKAGE (Lua REQUIRED)
-	INCLUDE_DIRECTORIES (${LUA_INCLUDE_DIR})	
+	INCLUDE_DIRECTORIES (${LUA_INCLUDE_DIR})
 
+	IF(MSVC)
+		find_library(LUA_LIBRARY_DEBUG
+					NAMES luad
+					HINTS
+					ENV LUA_DIR
+					PATH_SUFFIXES lib)
+		set(LUA_LIBRARIES optimized ${LUA_LIBRARIES} debug ${LUA_LIBRARY_DEBUG})
+	ENDIF()
 ###########################################################################
 
 MESSAGE("Configure: qtlua - generating config.hh:")
